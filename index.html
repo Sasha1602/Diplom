@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Club | Бронирование</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, system-ui;
+            padding: 20px;
+            background: #f3f4f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .club-photo {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+        
+        .info-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .bot-features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .bot-features li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .booking-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #31b545;
+            color: white;
+            text-align: center;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 20px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ Cyber Arena Club</h1>
+        <img src="https://example.com/club-photo.jpg" class="club-photo" alt="Фото клуба">
+    </div>
+
+    <div class="info-section">
+        <h2>🕹️ О нашем клубе</h2>
+        <p>• Современные игровые PC с RTX 4090<br>
+           • Киберспортивная зона<br>
+           • VR-пространство<br>
+           • 24/7 режим работы</p>
+    </div>
+
+    <div class="info-section">
+        <h2>🤖 Возможности бота</h2>
+        <ul class="bot-features">
+            <li>✅ Онлайн-бронирование мест</li>
+            <li>✅ Просмотр свободных ПК</li>
+            <li>✅ Оплата через Telegram</li>
+            <li>✅ Управление бронированиями</li>
+        </ul>
+    </div>
+
+    <button class="booking-button" onclick="openBot()">
+        🕹️ Перейти к бронированию
+    </button>
+
+    <script>
+        // Инициализация Telegram Web App
+        Telegram.WebApp.ready();
+        
+        function openBot() {
+            // Открываем бота с глубокой ссылкой
+            Telegram.WebApp.openTelegramLink('https://t.me/your_bot_username?start=booking');
+            
+            // Закрываем мини-приложение (опционально)
+            Telegram.WebApp.close();
+        }
+    </script>
+</body>
+</html>
