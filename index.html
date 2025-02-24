@@ -4,10 +4,21 @@
     <title>Game Club | Бронирование</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #f3f4f5);
+            --button-color: var(--tg-theme-button-color, #31b545);
+            --button-text: var(--tg-theme-button-text-color, #ffffff);
+            --section-bg: var(--tg-theme-section-bg-color, #ffffff);
+        }
+
         body {
             font-family: -apple-system, system-ui;
             padding: 20px;
-            background: #f3f4f5;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background 0.3s, color 0.3s;
         }
         
         .header {
@@ -24,11 +35,12 @@
         }
         
         .info-section {
-            background: white;
+            background: var(--section-bg);
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background 0.3s;
         }
         
         .bot-features {
@@ -39,16 +51,17 @@
         .bot-features li {
             padding: 10px;
             margin: 5px 0;
-            background: #f8f9fa;
+            background: var(--secondary-bg);
             border-radius: 8px;
+            transition: background 0.3s;
         }
         
         .booking-button {
             display: block;
             width: 100%;
             padding: 15px;
-            background: #31b545;
-            color: white;
+            background: var(--button-color);
+            color: var(--button-text);
             text-align: center;
             border-radius: 12px;
             text-decoration: none;
@@ -60,49 +73,29 @@
             position: relative;
         }
 
-        /* Анимация кнопки */
-        .booking-button:active {
-            transform: scale(0.98);
-            background: #2a9c3d;
-        }
-
-        .booking-button::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .booking-button:active::after {
-            opacity: 1;
-        }
-
-        .contacts-list {
-            padding: 0;
-            list-style: none;
-        }
-
-        .contacts-list li {
-            padding: 8px 0;
+        /* Тема для ручного переключения */
+        .theme-switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--section-bg);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
-        }
-
-        .contacts-list li::before {
-            content: '•';
-            margin-right: 10px;
-            color: #31b545;
-            font-size: 1.2em;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
+    <!-- Добавляем переключатель темы -->
+    <div class="theme-switcher" onclick="toggleTheme()">
+        🌓
+    </div>
+
     <div class="header">
         <h1>⚡ Cyber Arena Club</h1>
         <img src="https://avatars.mds.yandex.net/get-altay/9720767/2a0000018999e30be07d9f6b2ca93bd1d21a/XXXL" class="club-photo" alt="Фото клуба">
@@ -130,39 +123,57 @@
     <div class="info-section">
         <h2>📌 Контакты</h2>
         <ul class="contacts-list">
-            <li>Адрес: ул. Геймерская, 42</li>
-            <li>Телефон: +7 (900) 123-45-67</li>
-            <li>Telegram: @cyberarena_support</li>
-            <li>Email: club@cyberarena.ru</li>
+            <li>Адрес: ул. Рабфаковская, 30</li>
+            <li>Телефон: +7 (4932) 20-32-03</li>
+            <li>VK: https://vk.com/playschamp.ivanovo</li>
         </ul>
     </div>
 
     <button class="booking-button" onclick="openBot()">
         🕹️ Перейти к бронированию
     </button>
-
+    
     <script>
         // Инициализация Telegram Web App
         Telegram.WebApp.ready();
         
-        function openBot() {
-            // Получаем данные пользователя
-            const user = Telegram.WebApp.initDataUnsafe.user;
-            const params = new URLSearchParams({
-                start: 'booking',
-                user_id: user?.id || '',
-                first_name: encodeURIComponent(user?.first_name || ''),
-                last_name: encodeURIComponent(user?.last_name || ''),
-                username: user?.username || ''
-            }).toString();
+        // Обработчик изменения темы Telegram
+        Telegram.WebApp.onEvent('themeChanged', updateTheme);
+        
+        // Ручное управление темой
+        let isDarkTheme = false;
+        
+        function updateTheme() {
+            // Автоматическое обновление из Telegram
+            document.documentElement.style.setProperty(
+                '--bg-color', 
+                Telegram.WebApp.colorScheme === 'dark' 
+                    ? Telegram.WebApp.themeParams.bg_color 
+                    : '#ffffff'
+            );
+        }
+        
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            if(isDarkTheme) {
+                document.documentElement.style.setProperty('--bg-color', '#1a1a1a');
+                document.documentElement.style.setProperty('--text-color', '#ffffff');
+                document.documentElement.style.setProperty('--section-bg', '#2d2d2d');
+            } else {
+                document.documentElement.style.setProperty('--bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--text-color', '#000000');
+                document.documentElement.style.setProperty('--section-bg', '#f3f4f5');
+            }
+        }
 
-            // Формируем глубокую ссылку с параметрами
-            const deepLink = `https://t.me/Playschamp_Bot`;
+        // Первоначальная настройка темы
+        updateTheme();
+        function openBot() {
+            const deepLink = `http://t.me/Playschamp_Bot/Playschamp`;
             
-            // Анимация перед переходом
             const button = document.querySelector('.booking-button');
             button.style.transform = 'scale(0.98)';
-            
+          
             setTimeout(() => {
                 Telegram.WebApp.openTelegramLink(deepLink);
                 Telegram.WebApp.close();
