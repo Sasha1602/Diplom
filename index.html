@@ -1,16 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Game Club | Бронирование</title>
+    <title>Cyber Arena | Бронирование</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #ffffff);
-            --text-color: var(--tg-theme-text-color, #000000);
-            --secondary-bg: var(--tg-theme-secondary-bg-color, #f3f4f5);
-            --button-color: var(--tg-theme-button-color, #31b545);
-            --button-text: var(--tg-theme-button-text-color, #ffffff);
-            --section-bg: var(--tg-theme-section-bg-color, #ffffff);
+            --bg-color: #ffffff;
+            --text-color: #222222;
+            --section-bg: #f8f9fa;
+            --button-color: #31b545;
+            --button-text: #ffffff;
+            --border-color: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --section-bg: #2d2d2d;
+            --button-color: #2a9c3d;
+            --border-color: #404040;
         }
 
         body {
@@ -18,83 +26,101 @@
             padding: 20px;
             background: var(--bg-color);
             color: var(--text-color);
+            margin: 0;
+            min-height: 100vh;
             transition: background 0.3s, color 0.3s;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .club-photo {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 15px;
-            transition: transform 0.3s ease;
-        }
-        
-        .info-section {
-            background: var(--section-bg);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: background 0.3s;
-        }
-        
-        .bot-features {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .bot-features li {
-            padding: 10px;
-            margin: 5px 0;
-            background: var(--secondary-bg);
-            border-radius: 8px;
-            transition: background 0.3s;
-        }
-        
-        .booking-button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background: var(--button-color);
-            color: var(--button-text);
-            text-align: center;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 500;
-            margin-top: 20px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
 
-        /* Тема для ручного переключения */
         .theme-switcher {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: var(--section-bg);
-            border-radius: 50%;
             width: 40px;
             height: 40px;
+            border-radius: 50%;
+            background: var(--section-bg);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .club-photo {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-section {
+            background: var(--section-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: background 0.3s;
+        }
+
+        .section-title {
+            margin-top: 0;
+            font-size: 1.4em;
+            color: var(--text-color);
+        }
+
+        .bot-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .bot-features li {
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .contacts-list {
+            padding: 0;
+            list-style: none;
+        }
+
+        .contacts-list li {
+            padding: 8px 0;
+            color: var(--text-color);
+        }
+
+        .booking-button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: var(--button-color);
+            color: var(--button-text);
+            text-align: center;
+            border-radius: 12px;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 25px;
+        }
+
+        .booking-button:active {
+            transform: scale(0.97);
         }
     </style>
 </head>
 <body>
-    <!-- Добавляем переключатель темы -->
-    <div class="theme-switcher" onclick="toggleTheme()">
-        🌓
-    </div>
+    <div class="theme-switcher" onclick="toggleTheme()">🌓</div>
 
     <div class="header">
         <h1>⚡ Cyber Arena Club</h1>
@@ -102,80 +128,67 @@
     </div>
 
     <div class="info-section">
-        <h2>🕹️ О нашем клубе</h2>
-        <p>• Современные игровые PC с RTX 4090<br>
-           • Киберспортивная зона<br>
-           • VR-пространство<br>
-           • 24/7 режим работы</p>
-    </div>
-
-    <div class="info-section">
-        <h2>🤖 Возможности бота</h2>
+        <h2 class="section-title">🕹️ О клубе</h2>
         <ul class="bot-features">
-            <li>✅ Онлайн-бронирование мест</li>
-            <li>✅ Просмотр свободных ПК</li>
-            <li>✅ Оплата через Telegram</li>
-            <li>✅ Управление бронированиями</li>
+            <li>• Игровые ПК с RTX 4090</li>
+            <li>• VR-зона премиум класса</li>
+            <li>• 24/7 доступ</li>
+            <li>• Профессиональные мониторы</li>
         </ul>
     </div>
 
-    <!-- Новая секция с контактами -->
     <div class="info-section">
-        <h2>📌 Контакты</h2>
-        <ul class="contacts-list">
-            <li>Адрес: ул. Рабфаковская, 30</li>
-            <li>Телефон: +7 (4932) 20-32-03</li>
-            <li>VK: https://vk.com/playschamp.ivanovo</li>
+        <h2 class="section-title">🤖 Функции бота</h2>
+        <ul class="bot-features">
+            <li>✅ Мгновенное бронирование</li>
+            <li>✅ Онлайн-оплата</li>
+            <li>✅ Управление бронями</li>
+            <li>✅ Уведомления</li>
         </ul>
     </div>
 
-    <button class="booking-button" onclick="openBot()">
-        🕹️ Перейти к бронированию
+    <div class="info-section">
+        <h2 class="section-title">📌 Контакты</h2>
+        <ul class="contacts-list">
+            <li>📍 Адрес: ул. Геймерская, 42</li>
+            <li>📞 Телефон: +7 (900) 123-45-67</li>
+            <li>🕒 Работаем круглосуточно</li>
+        </ul>
+    </div>
+
+    <button class="booking-button" onclick="handleBooking()">
+        Начать бронирование
     </button>
-    
+
     <script>
-        // Инициализация Telegram Web App
+        // Инициализация Telegram WebApp
         Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
         
-        // Обработчик изменения темы Telegram
-        Telegram.WebApp.onEvent('themeChanged', updateTheme);
-        
-        // Ручное управление темой
-        let isDarkTheme = false;
-        
-        function updateTheme() {
-            // Автоматическое обновление из Telegram
-            document.documentElement.style.setProperty(
-                '--bg-color', 
-                Telegram.WebApp.colorScheme === 'dark' 
-                    ? Telegram.WebApp.themeParams.bg_color 
-                    : '#ffffff'
-            );
-        }
-        
+        // Инициализация темы
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', currentTheme);
+
         function toggleTheme() {
-            isDarkTheme = !isDarkTheme;
-            if(isDarkTheme) {
-                document.documentElement.style.setProperty('--bg-color', '#1a1a1a');
-                document.documentElement.style.setProperty('--text-color', '#ffffff');
-                document.documentElement.style.setProperty('--section-bg', '#2d2d2d');
-            } else {
-                document.documentElement.style.setProperty('--bg-color', '#ffffff');
-                document.documentElement.style.setProperty('--text-color', '#000000');
-                document.documentElement.style.setProperty('--section-bg', '#f3f4f5');
-            }
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
         }
 
-        // Первоначальная настройка темы
-        updateTheme();
-        function openBot() {
-            const deepLink = `https://t.me/Playschamp_Bot`;
-            
+        function handleBooking() {
+            const user = Telegram.WebApp.initDataUnsafe.user || {};
+            const params = new URLSearchParams({
+                start: 'booking',
+                user_id: user.id || 'unknown',
+                first_name: encodeURIComponent(user.first_name || 'Гость'),
+                username: user.username || ''
+            });
+
             const button = document.querySelector('.booking-button');
-            button.style.transform = 'scale(0.98)';
-          
+            button.disabled = true;
+            
             setTimeout(() => {
-                Telegram.WebApp.openTelegramLink(deepLink);
+                Telegram.WebApp.openTelegramLink(`https://t.me/Playschamp_Bot`);
                 Telegram.WebApp.close();
             }, 150);
         }
