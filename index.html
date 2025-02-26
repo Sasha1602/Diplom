@@ -176,6 +176,7 @@
             list-style: none;
             display: grid;
             gap: 0.8rem;
+            margin-bottom: 1.5rem;
         }
 
         .contacts-list li {
@@ -186,6 +187,14 @@
             display: flex;
             align-items: center;
             gap: 0.8rem;
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: var(--corner-radius);
+            overflow: hidden;
+            margin-top: 1rem;
         }
 
         .menu-toggle {
@@ -292,11 +301,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="menu-toggle" onclick="toggleMenu()">
-            <div class="menu-icon"></div>
-        </div>
-        
+    <div class="container">        
         <header class="header">
             <h1>👾 PLAYSCHAMP 👾</h1>
             <img src="https://avatars.mds.yandex.net/get-altay/9720767/2a0000018999e30be07d9f6b2ca93bd1d21a/XXXL" 
@@ -310,7 +315,7 @@
                 <ul class="contacts-list">
                     <li>💻 Мощные игровые ПК</li>
                     <li>🥪 Кибер-Бар</li>
-                    <li>🕒 Круглосуточный доступ</li>
+                    <li>🕒 Работаем 24/7. Без выходных</li>
                 </ul>
             </section>
 
@@ -393,24 +398,42 @@
                 <ul class="contacts-list">
                     <li>📍 ул. Рабфаковская, 30</li>
                     <li>📞 +7 (4932) 20-32-03</li>
-                    <li>🕒 24/7</li>
+                    <li>🧑🏻‍💻 Администратор всегда на связи</li>
                 </ul>
+                <div id="map"></div>
             </section>
         </div>
     </div>
 
-<!--     <div class="mobile-menu">
-        <nav>
-            <ul>
-                <li><a href="#about" onclick="toggleMenu()">О клубе</a></li>
-                <li><a href="#prices" onclick="toggleMenu()">Прайс-лист</a></li>
-                <li><a href="#contacts" onclick="toggleMenu()">Контакты</a></li>
-                <li><a href="#booking" onclick="toggleMenu()">Бронирование</a></li>
-            </ul>
-        </nav>
-    </div> -->
-
+    <!-- Яндекс.Карты -->
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=154d6bf6-07b5-4ac2-ae90-0f0030739bb5&lang=ru_RU"></script>
     <script>
+        // Инициализация Яндекс.Карты
+        ymaps.ready(init);
+
+        function init() {
+            const map = new ymaps.Map('map', {
+                center: [57.002963, 40.944181], // Координаты ул. Рабфаковская, 30
+                zoom: 17,
+                controls: ['zoomControl']
+            });
+
+            // Создание метки
+            const placemark = new ymaps.Placemark([57.005870, 40.952917], {
+                hintContent: 'Cyber Arena Playschamp',
+                balloonContent: 'ул. Рабфаковская, 30'
+            }, {
+                iconLayout: 'default#image',
+                iconImageHref: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                iconImageSize: [40, 40],
+                iconImageOffset: [-20, -40]
+            });
+
+            map.geoObjects.add(placemark);
+            map.behaviors.disable('scrollZoom');
+        }
+
+        // Telegram WebApp
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
 
@@ -432,13 +455,13 @@
             }, 150);
         }
 
+        // Мобильное меню
         function toggleMenu() {
-           // const menu = document.querySelector('.mobile-menu');
             const toggle = document.querySelector('.menu-toggle');
-            //menu.classList.toggle('active');
             toggle.classList.toggle('active');
         }
 
+        // Раскрытие прайс-листа
         document.querySelectorAll('.price-header').forEach(header => {
             header.addEventListener('click', () => {
                 const parent = header.parentElement;
