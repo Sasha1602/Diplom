@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Arena | Бронирование</title>
+    <title>Киберспортивная Арена Playschamp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #222222;
-            --section-bg: #f8f9fa;
-            --button-color: #31b545;
-            --button-text: #ffffff;
-            --border-color: #e0e0e0;
+            --bg-color: #0F0F0F;
+            --text-color: #FFFFFF;
+            --section-bg: #1E1E1E;
+            --accent-color: #5e3bdb;
+            --border-color: #2D2D2D;
+            --button-gradient: linear-gradient(135deg, #5e3bdb 0%, #4a2ac7 100%);
             --base-font: 1rem;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #ffffff;
-            --section-bg: #2d2d2d;
-            --button-color: #2a9c3d;
-            --border-color: #404040;
+            --corner-radius: 0.8rem;
         }
 
         * {
@@ -31,14 +24,13 @@
         }
 
         body {
-            font-family: -apple-system, system-ui;
+            font-family: 'Segoe UI', system-ui;
             font-size: var(--base-font);
             line-height: 1.6;
             background: var(--bg-color);
             color: var(--text-color);
             padding: 1rem;
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
         }
 
         .container {
@@ -46,89 +38,141 @@
             margin: 0 auto;
         }
 
-        .theme-switcher {
-            position: fixed;
-            bottom: 1.25rem;
-            right: 1.25rem;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            background: var(--section-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-
         .header {
             text-align: center;
             margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .header h1 {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            text-shadow: 0 0 8px rgba(94,59,219,0.4);
         }
 
         .club-photo {
             width: 100%;
             max-height: 50vh;
             object-fit: cover;
-            border-radius: 1rem;
+            border-radius: var(--corner-radius);
             margin: 1rem 0;
+            border: 2px solid var(--border-color);
         }
 
         .info-section {
             background: var(--section-bg);
             padding: 1.5rem;
-            border-radius: 1rem;
+            border-radius: var(--corner-radius);
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
         .section-title {
             font-size: 1.4em;
             margin-bottom: 1rem;
-            color: var(--text-color);
+            color: var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 0.8rem;
         }
 
-        .bot-features {
-            list-style: none;
+        .price-list {
             display: grid;
             gap: 0.8rem;
         }
 
-        .bot-features li {
-            padding: 1rem;
+        .price-item {
             background: var(--bg-color);
-            border-radius: 0.8rem;
             border: 1px solid var(--border-color);
+            border-radius: var(--corner-radius);
+            overflow: hidden;
         }
 
-        .contacts-list {
+        .price-item summary {
+            padding: 1rem;
+            font-weight: 600;
+            cursor: pointer;
             list-style: none;
-            display: grid;
-            gap: 0.5rem;
-        }
-
-        .contacts-list li {
-            padding: 0.5rem 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            background: rgba(94,59,219,0.1);
+            transition: all 0.2s ease;
+            border-radius: var(--corner-radius);
+        }
+
+        .price-item summary:hover {
+            background: rgba(94,59,219,0.2);
+        }
+
+        .price-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .price-item[open] summary {
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        .price-item ul {
+            padding: 1rem;
+            display: grid;
+            gap: 0.8rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 0 0 var(--corner-radius) var(--corner-radius);
+        }
+
+        .price-item li {
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--section-bg);
+            border-radius: calc(var(--corner-radius) - 2px);
+        }
+
+        .price-item li span:last-child {
+            color: var(--accent-color);
+            font-weight: bold;
         }
 
         .booking-button {
             display: block;
             width: 100%;
             padding: 1.2rem;
-            background: var(--button-color);
-            color: var(--button-text);
+            background: var(--button-gradient);
+            color: white;
             text-align: center;
-            border-radius: 1rem;
+            border-radius: var(--corner-radius);
             border: none;
             font-size: 1.1em;
             cursor: pointer;
             transition: transform 0.1s ease;
             margin: 2rem 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .booking-button:hover {
+            transform: scale(1.02);
+        }
+
+        .contacts-list {
+            list-style: none;
+            display: grid;
+            gap: 0.8rem;
+        }
+
+        .contacts-list li {
+            padding: 0.8rem;
+            background: var(--bg-color);
+            border-radius: var(--corner-radius);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
 
         @media (min-width: 768px) {
@@ -162,27 +206,12 @@
                 margin-right: auto;
             }
         }
-
-        @media (max-width: 480px) {
-            :root {
-                --base-font: 0.95rem;
-            }
-            
-            .theme-switcher {
-                bottom: 0.5rem;
-                right: 0.5rem;
-                width: 2.5rem;
-                height: 2.5rem;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="theme-switcher" onclick="toggleTheme()">🌓</div>
-
         <header class="header">
-            <h1>⚡ Cyber Arena Club</h1>
+            <h1>⚡ Playschamp</h1>
             <img src="https://avatars.mds.yandex.net/get-altay/9720767/2a0000018999e30be07d9f6b2ca93bd1d21a/XXXL" 
                  class="club-photo" 
                  alt="Игровая зона клуба">
@@ -190,57 +219,94 @@
 
         <div class="info-sections">
             <section class="info-section">
-                <h2 class="section-title">🕹️ О клубе</h2>
-                <ul class="bot-features">
-                    <li>• Мощные игровые ПК</li>
-                    <li>• VR-зона премиум класса</li>
-                    <li>• Круглосуточный доступ</li>
-                    <li>• Профессиональное оборудование</li>
-                </ul>
-            </section>
-
-            <section class="info-section">
-                <h2 class="section-title">🤖 Функции бота</h2>
-                <ul class="bot-features">
-                    <li>✅ Онлайн-бронирование</li>
-                    <li>✅ Мгновенная оплата</li>
-                    <li>✅ Управление бронями</li>
-                    <li>✅ Персональные уведомления</li>
-                </ul>
-            </section>
-
-            <section class="info-section">
-                <h2 class="section-title">📌 Контакты</h2>
+                <h2 class="section-title">🕹️ О КЛУБЕ</h2>
                 <ul class="contacts-list">
-                    <li>📍 Адрес: ул. Рабфаковская, 30</li>
-                    <li>📞 Телефон: +7 (4932) 20-32-03</li>
-                    <li>🕒 Работаем 24/7</li>
-                    <li>✉️ Email: club@cyberarena.ru</li>
+                    <li>🎮 Мощные игровые ПК</li>
+                    <li>💻 Профессиональное оборудование</li>
+                    <li>🥪 Кибер-Бар</li>
+                    <li>⏳ Круглосуточный доступ</li>
+                </ul>
+            </section>
+
+            <section class="info-section">
+                <h2 class="section-title">💰 ПРАЙС-ЛИСТ</h2>
+                <div class="price-list">
+                    <details class="price-item">
+                        <summary>🎮 Изи-Лайн</summary>
+                        <ul>
+                            <li><span>1 час:</span><span>50₽</span></li>
+                            <li><span>Утро (8:00-13:00):</span><span>100₽</span></li>
+                            <li><span>День (13:00-18:00):</span><span>150₽</span></li>
+                            <li><span>Вечер (18:00-00:00):</span><span>250₽</span></li>
+                            <li><span>Ночь (00:00-8:00):</span><span>200₽</span></li>
+                        </ul>
+                    </details>
+
+                    <details class="price-item">
+                        <summary>💻 Про-Лайн</summary>
+                        <ul>
+                            <li><span>1 час:</span><span>70₽</span></li>
+                            <li><span>Утро (8:00-13:00):</span><span>150₽</span></li>
+                            <li><span>День (13:00-18:00):</span><span>250₽</span></li>
+                            <li><span>Вечер (18:00-00:00):</span><span>350₽</span></li>
+                            <li><span>Ночь (00:00-8:00):</span><span>250₽</span></li>
+                        </ul>
+                    </details>
+
+                    <details class="price-item">
+                        <summary>🎯 Буткемп</summary>
+                        <ul>
+                            <li><span>1 час:</span><span>120₽</span></li>
+                            <li><span>Утро (8:00-13:00):</span><span>250₽</span></li>
+                            <li><span>День (13:00-18:00):</span><span>450₽</span></li>
+                            <li><span>Вечер (18:00-00:00):</span><span>500₽</span></li>
+                            <li><span>Ночь (00:00-8:00):</span><span>450₽</span></li>
+                        </ul>
+                    </details>
+
+                    <details class="price-item">
+                        <summary>🎮 PS4</summary>
+                        <ul>
+                            <li><span>1 час:</span><span>120₽</span></li>
+                            <li><span>Утро (8:00-13:00):</span><span>250₽</span></li>
+                            <li><span>День (13:00-18:00):</span><span>450₽</span></li>
+                            <li><span>Вечер (18:00-00:00):</span><span>600₽</span></li>
+                            <li><span>Ночь (00:00-8:00):</span><span>500₽</span></li>
+                        </ul>
+                    </details>
+
+                    <details class="price-item">
+                        <summary>🕹️ PS5</summary>
+                        <ul>
+                            <li><span>1 час:</span><span>200₽</span></li>
+                            <li><span>Утро (8:00-13:00):</span><span>400₽</span></li>
+                            <li><span>День (13:00-18:00):</span><span>700₽</span></li>
+                            <li><span>Вечер (18:00-00:00):</span><span>900₽</span></li>
+                            <li><span>Ночь (00:00-8:00):</span><span>750₽</span></li>
+                        </ul>
+                    </details>
+                </div>
+            </section>
+
+            <section class="info-section">
+                <h2 class="section-title">📌 КОНТАКТЫ</h2>
+                <ul class="contacts-list">
+                    <li>📍 ул. Рабфаковская, 30</li>
+                    <li>📞 +7 (4932) 20-32-03</li>
+                    <li>🕒 24/7</li>
                 </ul>
             </section>
         </div>
 
         <button class="booking-button" onclick="handleBooking()">
-            Начать бронирование
+            🎮 Начать бронирование
         </button>
     </div>
 
     <script>
-        // Инициализация Telegram WebApp
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
-        
-        // Управление темами
-        let currentTheme = localStorage.getItem('theme') || 'light';
-        document.body.setAttribute('data-theme', currentTheme);
 
-        function toggleTheme() {
-            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.body.setAttribute('data-theme', currentTheme);
-            localStorage.setItem('theme', currentTheme);
-        }
-
-        // Обработка бронирования
         function handleBooking() {
             const user = Telegram.WebApp.initDataUnsafe.user || {};
             const params = new URLSearchParams({
