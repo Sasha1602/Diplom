@@ -86,31 +86,45 @@
             border: 1px solid var(--border-color);
             border-radius: var(--corner-radius);
             overflow: hidden;
+            margin-bottom: 0.5rem;
         }
 
-        .price-item summary {
+        .price-header {
             padding: 1rem;
             font-weight: 600;
             cursor: pointer;
-            list-style: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             background: rgba(94,59,219,0.1);
-            transition: all 0.2s ease;
-            border-radius: var(--corner-radius);
+            transition: all 0.3s ease;
         }
 
-        .price-item summary:hover {
+        .price-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .price-item.active .price-content {
+            max-height: 500px;
+        }
+
+        .price-item.active .price-header {
             background: rgba(94,59,219,0.2);
-        }
-
-        .price-item summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .price-item[open] summary {
             border-bottom: 1px solid var(--accent-color);
+        }
+
+        .price-header::after {
+            content: '▼';
+            font-size: 0.8em;
+            margin-left: auto;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--accent-color);
+        }
+
+        .price-item.active .price-header::after {
+            transform: rotate(180deg);
         }
 
         .price-item ul {
@@ -118,7 +132,6 @@
             display: grid;
             gap: 0.8rem;
             background: rgba(0,0,0,0.3);
-            border-radius: 0 0 var(--corner-radius) var(--corner-radius);
         }
 
         .price-item li {
@@ -175,6 +188,76 @@
             gap: 0.8rem;
         }
 
+        .menu-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            cursor: pointer;
+            display: none;
+        }
+
+        .menu-icon {
+            width: 30px;
+            height: 3px;
+            background: #5e3bdb;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .menu-icon::before,
+        .menu-icon::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 3px;
+            background: #5e3bdb;
+            transition: all 0.3s;
+        }
+
+        .menu-icon::before {
+            transform: translateY(-8px);
+        }
+
+        .menu-icon::after {
+            transform: translateY(8px);
+        }
+
+        .menu-toggle.active .menu-icon {
+            background: transparent;
+        }
+
+        .menu-toggle.active .menu-icon::before {
+            transform: rotate(45deg);
+        }
+
+        .menu-toggle.active .menu-icon::after {
+            transform: rotate(-45deg);
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 70%;
+            height: 100%;
+            background: var(--section-bg);
+            z-index: 999;
+            transition: all 0.3s;
+            padding: 2rem;
+            box-shadow: -4px 0 10px rgba(0,0,0,0.2);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+        }
+
         @media (min-width: 768px) {
             :root {
                 --base-font: 1.05rem;
@@ -210,6 +293,10 @@
 </head>
 <body>
     <div class="container">
+        <div class="menu-toggle" onclick="toggleMenu()">
+            <div class="menu-icon"></div>
+        </div>
+        
         <header class="header">
             <h1>👾 PLAYSCHAMP 👾</h1>
             <img src="https://avatars.mds.yandex.net/get-altay/9720767/2a0000018999e30be07d9f6b2ca93bd1d21a/XXXL" 
@@ -230,63 +317,77 @@
             <section class="info-section">
                 <h2 class="section-title">💰 ПРАЙС-ЛИСТ</h2>
                 <div class="price-list">
-                    <details class="price-item">
-                        <summary>🖥 Изи-Лайн</summary>
-                        <ul>
-                            <li><span>1 час:</span><span>50₽</span></li>
-                            <li><span>Утро (8:00-13:00):</span><span>100₽</span></li>
-                            <li><span>День (13:00-18:00):</span><span>150₽</span></li>
-                            <li><span>Вечер (18:00-00:00):</span><span>250₽</span></li>
-                            <li><span>Ночь (00:00-8:00):</span><span>200₽</span></li>
-                        </ul>
-                    </details>
+                    <div class="price-item">
+                        <div class="price-header">🖥 Изи-Лайн</div>
+                        <div class="price-content">
+                            <ul>
+                                <li><span>Час игры</span><span>50₽</span></li>
+                                <li><span>🌇 Утро (8:00-13:00)</span><span>100₽</span></li>
+                                <li><span>🏙 День (13:00-18:00)</span><span>150₽</span></li>
+                                <li><span>🌃 Вечер (18:00-00:00)</span><span>250₽</span></li>
+                                <li><span>🌉 Ночь (00:00-8:00)</span><span>200₽</span></li>
+                            </ul>
+                        </div>
+                    </div>
 
-                    <details class="price-item">
-                        <summary>💻 Про-Лайн</summary>
-                        <ul>
-                            <li><span>1 час:</span><span>70₽</span></li>
-                            <li><span>Утро (8:00-13:00):</span><span>150₽</span></li>
-                            <li><span>День (13:00-18:00):</span><span>250₽</span></li>
-                            <li><span>Вечер (18:00-00:00):</span><span>350₽</span></li>
-                            <li><span>Ночь (00:00-8:00):</span><span>250₽</span></li>
-                        </ul>
-                    </details>
+                    <div class="price-item">
+                        <div class="price-header">💻 Про-Лайн</div>
+                        <div class="price-content">
+                            <ul>
+                                <li><span>Час игры</span><span>70₽</span></li>
+                                <li><span>🌇 Утро (8:00-13:00)</span><span>150₽</span></li>
+                                <li><span>🏙 День (13:00-18:00)</span><span>250₽</span></li>
+                                <li><span>🌃 Вечер (18:00-00:00)</span><span>350₽</span></li>
+                                <li><span>🌉 Ночь (00:00-8:00)</span><span>250₽</span></li>
+                            </ul>
+                        </div>
+                    </div>
 
-                    <details class="price-item">
-                        <summary>🎯 Буткемп</summary>
-                        <ul>
-                            <li><span>1 час:</span><span>120₽</span></li>
-                            <li><span>Утро (8:00-13:00):</span><span>250₽</span></li>
-                            <li><span>День (13:00-18:00):</span><span>450₽</span></li>
-                            <li><span>Вечер (18:00-00:00):</span><span>500₽</span></li>
-                            <li><span>Ночь (00:00-8:00):</span><span>450₽</span></li>
-                        </ul>
-                    </details>
+                    <div class="price-item">
+                        <div class="price-header">🎯 Буткемп</div>
+                        <div class="price-content">
+                            <ul>
+                                <li><span>Час игры</span><span>120₽</span></li>
+                                <li><span>🌇 Утро (8:00-13:00)</span><span>250₽</span></li>
+                                <li><span>🏙 День (13:00-18:00)</span><span>450₽</span></li>
+                                <li><span>🌃 Вечер (18:00-00:00)</span><span>500₽</span></li>
+                                <li><span>🌉 Ночь (00:00-8:00)</span><span>450₽</span></li>
+                            </ul>
+                        </div>
+                    </div>
 
-                    <details class="price-item">
-                        <summary>🎮 PS4</summary>
-                        <ul>
-                            <li><span>1 час:</span><span>120₽</span></li>
-                            <li><span>Утро (8:00-13:00):</span><span>250₽</span></li>
-                            <li><span>День (13:00-18:00):</span><span>450₽</span></li>
-                            <li><span>Вечер (18:00-00:00):</span><span>600₽</span></li>
-                            <li><span>Ночь (00:00-8:00):</span><span>500₽</span></li>
-                        </ul>
-                    </details>
+                    <div class="price-item">
+                        <div class="price-header">🎮 PS4</div>
+                        <div class="price-content">
+                            <ul>
+                                <li><span>Час игры</span><span>120₽</span></li>
+                                <li><span>🌇 Утро (8:00-13:00)</span><span>250₽</span></li>
+                                <li><span>🏙 День (13:00-18:00)</span><span>450₽</span></li>
+                                <li><span>🌃 Вечер (18:00-00:00)</span><span>600₽</span></li>
+                                <li><span>🌉 Ночь (00:00-8:00)</span><span>500₽</span></li>
+                            </ul>
+                        </div>
+                    </div>
 
-                    <details class="price-item">
-                        <summary>🎮 PS5</summary>
-                        <ul>
-                            <li><span>1 час:</span><span>200₽</span></li>
-                            <li><span>Утро (8:00-13:00):</span><span>400₽</span></li>
-                            <li><span>День (13:00-18:00):</span><span>700₽</span></li>
-                            <li><span>Вечер (18:00-00:00):</span><span>900₽</span></li>
-                            <li><span>Ночь (00:00-8:00):</span><span>750₽</span></li>
-                        </ul>
-                    </details>
+                    <div class="price-item">
+                        <div class="price-header">🎮 PS5</div>
+                        <div class="price-content">
+                            <ul>
+                                <li><span>Час игры</span><span>200₽</span></li>
+                                <li><span>🌇 Утро (8:00-13:00)</span><span>400₽</span></li>
+                                <li><span>🏙 День (13:00-18:00)</span><span>700₽</span></li>
+                                <li><span>🌃 Вечер (18:00-00:00)</span><span>900₽</span></li>
+                                <li><span>🌉 Ночь (00:00-8:00)</span><span>750₽</span></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </section>
-
+            
+            <button class="booking-button" onclick="handleBooking()">
+                🎮 Начать бронирование
+            </button>
+            
             <section class="info-section">
                 <h2 class="section-title">📌 КОНТАКТЫ</h2>
                 <ul class="contacts-list">
@@ -296,10 +397,17 @@
                 </ul>
             </section>
         </div>
+    </div>
 
-        <button class="booking-button" onclick="handleBooking()">
-            🎮 Начать бронирование
-        </button>
+    <div class="mobile-menu">
+        <nav>
+            <ul>
+                <li><a href="#about" onclick="toggleMenu()">О клубе</a></li>
+                <li><a href="#prices" onclick="toggleMenu()">Прайс-лист</a></li>
+                <li><a href="#contacts" onclick="toggleMenu()">Контакты</a></li>
+                <li><a href="#booking" onclick="toggleMenu()">Бронирование</a></li>
+            </ul>
+        </nav>
     </div>
 
     <script>
@@ -323,6 +431,20 @@
                 Telegram.WebApp.close();
             }, 150);
         }
+
+        function toggleMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const toggle = document.querySelector('.menu-toggle');
+            menu.classList.toggle('active');
+            toggle.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.price-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const parent = header.parentElement;
+                parent.classList.toggle('active');
+            });
+        });
     </script>
 </body>
 </html>
