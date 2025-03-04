@@ -304,6 +304,48 @@
                 margin-right: auto;
             }
         }
+	    
+	.contacts-list a li {
+            background: linear-gradient(
+                135deg, 
+                rgba(94,59,219,0.15) 0%, 
+                rgba(74,42,199,0.15) 100%
+            );
+            border: 1px solid rgba(94,59,219,0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contacts-list a li:hover {
+            background: linear-gradient(
+                135deg, 
+                rgba(94,59,219,0.25) 0%, 
+                rgba(74,42,199,0.25) 100%
+            );
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(94,59,219,0.3);
+        }
+
+        .contacts-list a li::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.15),
+                transparent
+            );
+            transition: left 0.6s;
+        }
+
+        .contacts-list a li:hover::before {
+            left: 100%;
+        }
     </style>
 </head>
 <body>
@@ -400,16 +442,25 @@
             </button>
             
             <section class="info-section">
-                <h2 class="section-title">📌 КОНТАКТЫ</h2>
-                <ul class="contacts-list">
-                    <li>📍 ул. Рабфаковская, 30</li>
-                    <li>📞 +7 (4932) 20-32-03</li>
-                    <a href = https://vk.com/playschamp.ivanovo><li>💬 Группа ВК</li> </a>
-		    <a href = https://ivanovo.playschamp.ru/><li>🌐 Наш сайт</li> </a>
-                    <li>🧑🏻‍💻 Администратор всегда на связи</li>
-                </ul>
-                <div id="map"></div>
-            </section>
+            <h2 class="section-title">📌 КОНТАКТЫ</h2>
+            <ul class="contacts-list">
+                <li>📍 ул. Рабфаковская, 30</li>
+                <li>📞 +7 (4932) 20-32-03</li>
+                <!-- Исправленные ссылки -->
+                <a href="https://vk.com/playschamp.ivanovo" 
+                   target="_blank" 
+                   onclick="Telegram.WebApp.openLink(this.href); return false;">
+                    <li>💬 Группа ВК</li>
+                </a>
+                <a href="https://ivanovo.playschamp.ru/" 
+                   target="_blank" 
+                   onclick="Telegram.WebApp.openLink(this.href); return false;">
+                    <li>🌐 Наш сайт</li>
+                </a>
+                <li>🧑🏻‍💻 Администратор всегда на связи</li>
+            </ul>
+            <div id="map"></div>
+        </section>
         </div>
     </div>
 
