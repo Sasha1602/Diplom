@@ -19,6 +19,8 @@ from database import (
 from utils import validate_phone, get_min_max_dates
 from config import DB_CONFIG
 import logging
+from rules import RULES_PARTS
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -62,6 +64,20 @@ def validate_computers(zone, computer_numbers):
             return False
     return True
 
+async def show_zone_selection(call_or_message):
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Изи-Лайн", callback_data="izi")],
+            [InlineKeyboardButton(text="Про-Лайн", callback_data="pro")],
+            [InlineKeyboardButton(text="Буткемп", callback_data="bootkemp")],
+            [InlineKeyboardButton(text="PS4", callback_data="ps4")],
+            [InlineKeyboardButton(text="PS5", callback_data="ps5")]
+        ]
+    )
+    if hasattr(call_or_message, 'message'):
+        await call_or_message.message.answer("Выберите желаемую зону:", reply_markup=keyboard)
+    else:
+        await call_or_message.answer("Выберите желаемую зону:", reply_markup=keyboard)
 
 async def send_week_calendar(uid, message: Message):
     """
@@ -73,6 +89,9 @@ async def send_week_calendar(uid, message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[])
     for date in dates:
         keyboard.inline_keyboard.append([InlineKeyboardButton(text=date, callback_data=f"date:{date}")])
+    
+    if user_data[uid].get("selected_zone") not in ["ps4", "ps5"]:
+        keyboard.inline_keyboard.append([InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_computers")])
     
     await message.answer("Выберите дату для бронирования:", reply_markup=keyboard)
 
@@ -178,13 +197,13 @@ async def get_new_nickname(message: Message):
     await show_actions(message)
     user_step[uid] = None
 
-
 @router.callback_query(F.data == "book")
 async def handle_book_button(call: CallbackQuery):
     uid = call.from_user.id
-    await call.answer()  # Убираем "часики" на кнопке
+    await call.answer()
 
-    user_data[uid]["selected_computers"] = []
+    user_data[uid] = {}
+    user_step[uid] = "awaiting_zone"
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -195,23 +214,20 @@ async def handle_book_button(call: CallbackQuery):
             [InlineKeyboardButton(text="PS5", callback_data="ps5")]
         ]
     )
-    await call.message.answer("Выберите желаемую зону:", reply_markup=keyboard)
-    user_step[uid] = "awaiting_zone"
 
+    
+    await call.message.answer("Выберите желаемую зону:", reply_markup=keyboard)
 
 @router.callback_query(F.data.in_(["izi", "pro", "bootkemp", "ps4", "ps5"]))
 async def handle_zone_selection(call: CallbackQuery):
     uid = call.from_user.id
-    user_data[uid]["selected_zone"] = call.data
-    if call.data in ["ps4", "ps5"]:
-        await call.message.answer("Выберите дату для бронирования:")
-        await send_week_calendar(uid, call.message)
-        user_step[uid] = "awaiting_date"
-    else:
-        await call.message.answer("Сколько компьютеров хотите забронировать?")
-        user_step[uid] = "awaiting_number_of_computers"
-    await call.answer()
+    if user_step.get(uid) != "awaiting_zone":
+        await call.answer("Зона уже выбрана", show_alert=True)
+        return
 
+    await call.message.edit_reply_markup(reply_markup=None)
+    await process_zone_selection(uid, call.data, call.message)
+    await call.answer()
 
 @router.message(F.func(lambda m: user_step.get(m.from_user.id) == "awaiting_number_of_computers"))
 async def ask_for_computer_numbers(message: Message):
@@ -229,14 +245,17 @@ async def ask_for_computer_numbers(message: Message):
                 f"Число должно быть положительным и не больше максимального количества {max_computers} компьютеров для зоны {selected_zone}."
             )
             return
-        user_data[uid]["number_of_computers"] = count
 
-        # Отправляем клавиатуру с выбором компьютеров
+        user_data[uid]["number_of_computers"] = count
+        user_data[uid]["selected_computers"] = []
+
         valid_numbers = zone_computer_mapping[selected_zone]
         keyboard = InlineKeyboardMarkup(inline_keyboard=[])
         for num in valid_numbers:
             keyboard.inline_keyboard.append([InlineKeyboardButton(text=str(num), callback_data=f"computer:{num}")])
-        
+
+        keyboard.inline_keyboard.append([InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_zone")])
+
         await message.answer("Выберите компьютеры для бронирования:", reply_markup=keyboard)
         user_step[uid] = "awaiting_computer_selection"
     except ValueError:
@@ -245,20 +264,21 @@ async def ask_for_computer_numbers(message: Message):
 @router.callback_query(F.data.startswith("computer:"))
 async def handle_computer_selection(call: CallbackQuery):
     uid = call.from_user.id
+    if user_step.get(uid) != "awaiting_computer_selection":
+        await call.answer("Этап уже завершён", show_alert=True)
+        return
+
     computer_number = int(call.data.split(":")[1])
 
-    if "selected_computers" not in user_data[uid]:
-        user_data[uid]["selected_computers"] = []
-
-    # Проверяем, был ли уже выбран этот компьютер
     if computer_number in user_data[uid]["selected_computers"]:
-        await call.answer(f"⚠️ Компьютер {computer_number} уже выбран!", show_alert=True)
+        await call.answer("⚠️ Компьютер уже выбран", show_alert=True)
         return
 
     user_data[uid]["selected_computers"].append(computer_number)
     await call.answer(f"✅ Компьютер {computer_number} выбран.")
 
     if len(user_data[uid]["selected_computers"]) >= user_data[uid]["number_of_computers"]:
+        
         await call.message.answer("Компьютеры успешно выбраны. Пожалуйста, выберите дату бронирования.")
         await send_week_calendar(uid, call.message)
         user_step[uid] = "awaiting_date"
@@ -267,81 +287,70 @@ async def handle_computer_selection(call: CallbackQuery):
 @router.callback_query(F.data.startswith("date:"))
 async def handle_date_selection(call: CallbackQuery):
     uid = call.from_user.id
-    try:
-        selected_date = call.data.split(":")[1]
-        user_data[uid]["booking_date"] = selected_date
-        selected_zone = user_data[uid]["selected_zone"]
-        
-        logging.info(f"User {uid} selected date: {selected_date} for zone: {selected_zone}")
-        
-        now = datetime.now()
-        times_list = []
-        start_hour = 0 if datetime.strptime(selected_date, "%d.%m.%Y").date() != now.date() else now.hour + 1
-        for hour in range(start_hour, 24):
-            for minute in [0, 30]:
-                time_string = f"{hour:02}:{minute:02}"  # Форматируем часы и минуты как HH:MM
-                callback_data = f"time:{selected_date}:{time_string}"
-                times_list.append(
-                    InlineKeyboardButton(text=time_string, callback_data=callback_data)
-                )
-        
-        markup = InlineKeyboardMarkup(inline_keyboard=[])
-        for i in range(0, len(times_list), 6):
-            row = times_list[i : i + 6]
-            markup.inline_keyboard.append(row)
-        
-        if selected_zone not in ["ps4", "ps5"]:
-            markup.inline_keyboard.append([InlineKeyboardButton(text="Назад к выбору даты", callback_data="back_to_date")])
-        
-        await call.message.answer(
-            f"Вы выбрали дату: {selected_date}. Выберите время:", reply_markup=markup
-        )
-        await call.answer()
-    except Exception as e:
-        logging.error(f"Error handling date selection for user {uid}: {e}")
-        await call.message.answer("Произошла ошибка при выборе даты. Пожалуйста, попробуйте снова.")
-        await call.answer()
+    if user_step.get(uid) != "awaiting_date":
+        await call.answer("Этап уже пройден", show_alert=True)
+        return
+
+    selected_date = call.data.split(":")[1]
+    user_data[uid]["booking_date"] = selected_date
+
+    
+
+    now = datetime.now()
+    times_list = []
+    start_hour = 0 if datetime.strptime(selected_date, "%d.%m.%Y").date() != now.date() else now.hour + 1
+    for hour in range(start_hour, 24):
+        for minute in [0, 30]:
+            time_string = f"{hour:02}:{minute:02}"
+            callback_data = f"time:{selected_date}:{time_string}"
+            times_list.append(InlineKeyboardButton(text=time_string, callback_data=callback_data))
+
+    markup = InlineKeyboardMarkup(inline_keyboard=[])
+    for i in range(0, len(times_list), 6):
+        markup.inline_keyboard.append(times_list[i:i + 6])
+
+    if user_data[uid].get("selected_zone") not in ["ps4", "ps5"]:
+        markup.inline_keyboard.append([InlineKeyboardButton(text="Назад к выбору даты", callback_data="back_to_date")])
+
+    await call.message.answer(f"Вы выбрали дату: {selected_date}. Выберите время:", reply_markup=markup)
+    user_step[uid] = "awaiting_time"
+    await call.answer()
 
 @router.callback_query(F.data.startswith("time:"))
 async def handle_time_selection(call: CallbackQuery):
     uid = call.from_user.id
+    if user_step.get(uid) != "awaiting_time":
+        await call.answer("Этап уже пройден", show_alert=True)
+        return
+
+    parts = call.data.split(":")
+    if len(parts) < 4:
+        await call.answer("Неверный формат данных.", show_alert=True)
+        return
+
+    _, date, hours, minutes = parts
+    time = f"{hours}:{minutes}"
+
     try:
-        # Разделяем call.data
-        parts = call.data.split(":")
+        datetime.strptime(time, "%H:%M")
+    except ValueError:
+        await call.answer("Некорректное время.", show_alert=True)
+        return
 
-        print(parts)  # Отладка
+    user_data[uid]["selected_time"] = time
+    user_data[uid]["booking_date"] = date
 
-        if len(parts) < 4:  # Должно быть 4 части: ['time', 'дата', 'часы', 'минуты']
-            raise ValueError("Некорректный формат данных. Ожидается: time:date:hours:minutes")
+    
 
-        # Получаем дату и время
-        _, date, hours, minutes = parts
-        time = f"{hours}:{minutes}"  # Собираем время в "HH:MM"
+    booking_details = f"Вы выбрали время: {time} на {date}. Подтвердите выбор."
+    markup = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Подтвердить бронь", callback_data="confirm_booking")],
+        [InlineKeyboardButton(text="Отменить бронь", callback_data="cancel_booking")],
+    ])
 
-        # Проверяем корректность формата времени
-        try:
-            datetime.strptime(time, "%H:%M")
-        except ValueError:
-            raise ValueError("Некорректный формат времени. Ожидалось HH:MM.")
-
-        # Сохраняем данные
-        user_data[uid]["selected_time"] = time
-        user_data[uid]["booking_date"] = date
-
-        # Формируем сообщение
-        booking_details = f"Вы выбрали время: {time} на {date}. Подтвердите выбор."
-        markup = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="Подтвердить бронь", callback_data="confirm_booking")],
-            [InlineKeyboardButton(text="Отменить бронь", callback_data="cancel_booking")],
-        ])
-
-        await call.message.answer(booking_details, reply_markup=markup)
-        await call.answer()
-
-    except Exception as e:
-        logging.error(f"Ошибка при выборе времени (UID: {uid}): {e}")
-        await call.message.answer("❌ Произошла ошибка. Попробуйте снова.")
-        await call.answer()
+    await call.message.answer(booking_details, reply_markup=markup)
+    user_step[uid] = "awaiting_confirmation"
+    await call.answer()
 
 @router.callback_query(F.data == "confirm_booking")
 async def confirm_booking(call: CallbackQuery):
@@ -404,18 +413,6 @@ async def confirm_booking(call: CallbackQuery):
     
     await call.answer()
 
-# @router.callback_query(F.data == "cancel_booking")
-# async def cancel_booking(call: CallbackQuery):
-#     uid = call.from_user.id
-#     keys_to_clear = ["computer_count", "zone", "booking_date", "computers"]
-#     for key in keys_to_clear:
-#         if key in user_data[uid]:
-#             user_data[uid][key] = None
-#     await call.message.answer("Ваше бронирование было отменено.")
-#     await show_actions(call.message)
-#     await call.answer()
-
-
 @router.callback_query(F.data == "cancellation")
 async def handle_cancellation(call: CallbackQuery):
     uid = call.from_user.id
@@ -449,6 +446,7 @@ async def show_actions(message: Message):
 @router.callback_query(F.data == "cancel_booking")
 async def handle_cancel_booking(call: CallbackQuery):
     uid = call.from_user.id
+    user_step[uid] = "cancelling"
 
     bookings = await fetch_user_bookings_by_uid(uid)
 
@@ -473,20 +471,28 @@ async def handle_cancel_booking(call: CallbackQuery):
         InlineKeyboardButton(text="Назад", callback_data="back_to_menu")
     ])
 
+    
     await call.message.answer("Выберите бронь для отмены:", reply_markup=markup)
 
-# Обработка отмены конкретной брони
 @router.callback_query(F.data.startswith("cancel:"))
 async def handle_cancel_specific_booking(call: CallbackQuery):
+    uid = call.from_user.id
+    if user_step.get(uid) != "cancelling":
+        await call.answer("Этап уже завершён", show_alert=True)
+        return
+
     booking_id = call.data.split(":")[1]
     await delete_booking_by_id(booking_id)
     await call.message.answer("✅ Бронирование успешно отменено.")
     await handle_cancel_booking(call)
 
-# Обработка отмены всех броней
 @router.callback_query(F.data == "cancel_all")
 async def handle_cancel_all_bookings(call: CallbackQuery):
     uid = call.from_user.id
+    if user_step.get(uid) != "cancelling":
+        await call.answer("Этап уже завершён", show_alert=True)
+        return
+
     await delete_all_bookings_by_uid(uid)
     await call.message.answer("✅ Все ваши бронирования успешно отменены.")
     await show_actions(call.message)
@@ -494,16 +500,109 @@ async def handle_cancel_all_bookings(call: CallbackQuery):
 # Возврат в главное меню
 @router.callback_query(F.data == "back_to_menu")
 async def handle_back_to_menu(call: CallbackQuery):
+    
     await show_actions(call.message)
 
 @router.callback_query(F.data == "back_to_date")
 async def handle_back_to_date(call: CallbackQuery):
     uid = call.from_user.id
 
-    # Очищаем ранее выбранное время
-    if "selected_time" in user_data[uid]:
-        user_data[uid]["selected_time"] = None
-
-    await call.answer()
-    await send_week_calendar(uid, call.message)
+    # Очищаем выбор времени
+    user_data[uid].pop("selected_time", None)
     user_step[uid] = "awaiting_date"
+
+    await call.message.edit_reply_markup(reply_markup=None)
+    await send_week_calendar(uid, call.message)
+    await call.answer()
+
+@router.message()
+async def handle_any_message(message: Message):
+    uid = message.from_user.id
+
+    user_exists = await check_user_in_db(uid)
+
+    if user_exists:
+        # Пользователь существует, отправляем его в основное меню
+        await show_actions(message)
+    else:
+        # Если пользователь не зарегистрирован, предлагаем начать регистрацию
+        await message.answer("Здравствуйте! Вы не зарегистрированы. Пожалуйста, используйте команду /start для регистрации.")
+
+@router.callback_query(F.data == "back_to_number")
+async def handle_back_to_number(call: CallbackQuery):
+    uid = call.from_user.id
+    user_step[uid] = "awaiting_number_of_computers"
+    
+    await ask_for_computer_numbers(call.message)
+
+# Обработка возврата к выбору компьютеров
+@router.callback_query(F.data == "back_to_computers")
+async def handle_back_to_computers(call: CallbackQuery):
+    uid = call.from_user.id
+
+    # Очищаем только данные, относящиеся к выбору даты и времени
+    user_data[uid].pop("booking_date", None)
+    user_data[uid].pop("selected_time", None)
+    user_data[uid]["selected_computers"] = []
+    user_step[uid] = "awaiting_computer_selection"
+
+    selected_zone = user_data[uid]["selected_zone"]
+    count = user_data[uid].get("number_of_computers", 1)
+    valid_numbers = zone_computer_mapping[selected_zone]
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=str(num), callback_data=f"computer:{num}")]
+        for num in valid_numbers
+    ])
+    keyboard.inline_keyboard.append([
+        InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_number")
+    ])
+
+    await call.message.edit_reply_markup(reply_markup=None)
+    await call.message.answer("Выберите компьютеры для бронирования:", reply_markup=keyboard)
+    await call.answer()
+
+@router.callback_query(F.data == "back_to_zone")
+async def handle_back_to_zone(call: CallbackQuery):
+    uid = call.from_user.id
+
+    # Очищаем всё, что связано с выбором ПК, даты, времени и зоны
+    user_data[uid].pop("selected_zone", None)
+    user_data[uid].pop("number_of_computers", None)
+    user_data[uid].pop("selected_computers", None)
+    user_data[uid].pop("booking_date", None)
+    user_data[uid].pop("selected_time", None)
+    user_step[uid] = "awaiting_zone"
+
+    await call.message.edit_reply_markup(reply_markup=None)
+    await handle_book_button(call)
+    await call.answer()
+
+@router.callback_query(F.data == "rules")
+async def handle_rules(call: CallbackQuery):
+    await call.answer()
+
+    for i, part in enumerate(RULES_PARTS):
+        if i == len(RULES_PARTS) - 1:
+            await call.message.answer(part, parse_mode="HTML", reply_markup=rules_back_keyboard)
+        else:
+            await call.message.answer(part, parse_mode="HTML")
+
+rules_back_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="⬅ Назад в меню", callback_data="back_to_menu")]
+    ]
+)
+
+async def process_zone_selection(uid, zone, message):
+    user_data[uid]["selected_zone"] = zone
+    if zone in ["ps4", "ps5"]:
+        await message.answer("Выберите дату для бронирования:")
+        await send_week_calendar(uid, message)
+        user_step[uid] = "awaiting_date"
+    else:
+        await message.answer("Сколько компьютеров хотите забронировать?",
+                             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                                 [InlineKeyboardButton(text="⬅ Назад", callback_data="back_to_zone")]
+                             ]))
+        user_step[uid] = "awaiting_number_of_computers"
