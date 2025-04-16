@@ -4,6 +4,12 @@ import aiomysql
 from config import DB_CONFIG
 import logging
 
+db_pool = None
+
+def set_db_pool(pool):
+    global db_pool
+    db_pool = pool
+
 async def create_db_connection():
     """Создает асинхронное подключение к базе данных."""
     try:
@@ -20,20 +26,16 @@ async def create_db_connection():
         raise
 
 async def execute_query(query, params=None, fetch=False):
-    """Выполняет SQL-запрос асинхронно."""
-    conn = await create_db_connection()
-    try:
-        async with conn.cursor() as cursor:
-            await cursor.execute(query, params)
-            if fetch:
-                result = await cursor.fetchall()
-                return result
-            await conn.commit()
-    except Exception as e:
-        logging.error(f"Ошибка выполнения запроса: {query} | Ошибка: {e}")
-        return None
-    finally:
-        conn.close()
+    async with db_pool.acquire() as conn:
+        try:
+            async with conn.cursor() as cursor:
+                await cursor.execute(query, params)
+                if fetch:
+                    return await cursor.fetchall()
+                await conn.commit()
+        except Exception as e:
+            logging.error(f"Ошибка выполнения запроса: {query} | Ошибка: {e}")
+            return None
 
 async def delete_booking(booking_id):
     query = "DELETE FROM UserInfo WHERE id = %s"
