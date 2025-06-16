@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Киберспортивная Арена Playschamp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Киберспортивная Арена</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -13,7 +14,7 @@
             --accent-color: #5e3bdb;
             --border-color: #2D2D2D;
             --button-gradient: linear-gradient(135deg, #5e3bdb 0%, #4a2ac7 100%);
-            --base-font: 1rem;
+            --base-font: clamp(0.9rem, 1vw + 0.5rem, 1.1rem);
             --corner-radius: 0.8rem;
         }
 
@@ -275,7 +276,7 @@
 
         @media (min-width: 768px) {
             :root {
-                --base-font: 1.05rem;
+                --base-font: clamp(0.9rem, 1vw + 0.5rem, 1.1rem);
             }
             
             .info-sections {
@@ -291,7 +292,7 @@
 
         @media (min-width: 1024px) {
             :root {
-                --base-font: 1.1rem;
+                --base-font: clamp(0.9rem, 1vw + 0.5rem, 1.1rem);
             }
             
             .info-sections {
@@ -346,12 +347,36 @@
         .contacts-list a li:hover::before {
             left: 100%;
         }
-    </style>
+    
+@media (max-width: 480px) {
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    .price-header {
+        font-size: 0.95rem;
+    }
+
+    .booking-button {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .contacts-list li {
+        font-size: 0.9rem;
+    }
+
+    .club-photo {
+        max-height: 35vh;
+    }
+}
+
+</style>
 </head>
 <body>
     <div class="container">        
         <header class="header">
-            <h1>👾 PLAYSCHAMP 👾</h1>
+            <h1>👾 TestPk 👾</h1>
             <img src="https://avatars.mds.yandex.net/get-altay/9720767/2a0000018999e30be07d9f6b2ca93bd1d21a/XXXL" 
                  class="club-photo" 
                  alt="Игровая зона клуба">
@@ -445,9 +470,9 @@
             <h2 class="section-title">📌 КОНТАКТЫ</h2>
             <ul class="contacts-list">
                 <li>📍 ул. Рабфаковская, 30</li>
-                <li>📞 +7 (4932) 20-32-03</li>
+                <li>📞	8(999)999-99-99 </li>
                 <!-- Исправленные ссылки -->
-                <a href="https://vk.com/playschamp.ivanovo" 
+<!--                 <a href="https://vk.com/playschamp.ivanovo" 
                    target="_blank" 
                    onclick="Telegram.WebApp.openLink(this.href); return false;">
                     <li>💬 Группа ВК</li>
@@ -456,7 +481,7 @@
                    target="_blank" 
                    onclick="Telegram.WebApp.openLink(this.href); return false;">
                     <li>🌐 Наш сайт</li>
-                </a>
+                </a> -->
                 <li>🧑🏻‍💻 Администратор всегда на связи</li>
             </ul>
             <div id="map"></div>
@@ -509,7 +534,7 @@
             button.disabled = true;
             
             setTimeout(() => {
-                Telegram.WebApp.openTelegramLink(`https://t.me/Playschamp_Bot`);
+                Telegram.WebApp.openTelegramLink('https://t.me/Playschamp_Bot');
                 Telegram.WebApp.close();
             }, 150);
         }
